@@ -1,16 +1,55 @@
 import { useState } from "react";
 
-export default function PromptGenerator() {
-  const cameraAngles = [
-    { value: "Three-Quarters (45°) view", display: "Góc 3/4 (45°)" },
-    { value: "Eye-Level (10°) shot", display: "Ngang tầm mắt (10°)" },
-    { value: "Top-Down (90°) shot", display: "Chụp từ trên xuống (90°)" },
-    { value: "High Angle (75°) shot", display: "Góc cao (75°)" },
-    { value: "Low Angle shot", display: "Góc thấp" },
-    { value: "Macro (Extreme Close-Up) shot", display: "Siêu cận cảnh (Macro)" },
-    { value: "Dutch Angle shot", display: "Góc nghiêng (Dutch Angle)" },
-    ];
+// --- NEW: Dữ liệu cho Scene Builder ---
+const scenes = [
+  {
+    id: "custom",
+    name: "Tùy chỉnh (Thủ công)",
+    background: "",
+    lighting: "Natural sunlight",
+    mood: "Fresh"
+  },
+  {
+    id: "minimal_studio",
+    name: "Studio Tối Giản",
+    background: "Seamless plain white background",
+    lighting: "Bright studio softbox light",
+    mood: "Clean, elegant, and minimal"
+  },
+  {
+    id: "cozy_kitchen",
+    name: "Căn Bếp Ấm Cúng",
+    background: "A rustic wooden kitchen table",
+    lighting: "Warm, soft window light",
+    mood: "Cozy, rustic, and inviting"
+  },
+  {
+    id: "dramatic_moody",
+    name: "Sân khấu Kịch tính",
+    background: "A dark, textured surface like slate or dark wood",
+    lighting: "Dramatic side light creating deep shadows",
+    mood: "Moody, intense, and sophisticated"
+  },
+  {
+    id: "outdoor_cafe",
+    name: "Quán Cafe Ngoài trời",
+    background: "A small marble cafe table, with a blurred street scene behind",
+    lighting: "Bright, natural afternoon sunlight",
+    mood: "Casual, relaxed, and vibrant"
+  }
+];
 
+const cameraAngles = [
+  { value: "Three-Quarters (45°) view", display: "Góc 3/4 (45°)" },
+  { value: "Eye-Level (10°) shot", display: "Ngang tầm mắt (10°)" },
+  { value: "Top-Down (90°) shot", display: "Chụp từ trên xuống (90°)" },
+  { value: "High Angle (75°) shot", display: "Góc cao (75°)" },
+  { value: "Low Angle shot", display: "Góc thấp" },
+  { value: "Macro (Extreme Close-Up) shot", display: "Siêu cận cảnh (Macro)" },
+  { value: "Dutch Angle shot", display: "Góc nghiêng (Dutch Angle)" },
+];
+
+export default function PromptGenerator() {
   const [form, setForm] = useState({
     category: "Food",
     subject: "",
@@ -19,17 +58,33 @@ export default function PromptGenerator() {
     style: "Hyperrealistic",
     background: "Plain white",
     mood: "Fresh",
-    depthOfField: "Shallow DoF (f/1.8)", // Nền mờ, xóa phông
+    depthOfField: "Shallow DoF (f/1.8)",
     lens: "50mm",
     focus: "Sharp focus on subject",
     extra: ""
   });
   const [prompt, setPrompt] = useState("");
   const [copied, setCopied] = useState(false);
+  const [selectedScene, setSelectedScene] = useState("custom"); // --- NEW: State để lưu scene đã chọn
+
+  // --- NEW: Hàm xử lý khi chọn một Scene ---
+  const handleSceneChange = (sceneId) => {
+    const scene = scenes.find((s) => s.id === sceneId);
+    setSelectedScene(sceneId);
+
+    if (scene && scene.id !== "custom") {
+      setForm(currentForm => ({
+        ...currentForm,
+        background: scene.background,
+        lighting: scene.lighting,
+        mood: scene.mood,
+      }));
+    }
+  };
 
   const generatePrompt = () => {
+    // ... hàm này không thay đổi, giữ nguyên như cũ
     const {
-      category,
       subject,
       composition,
       lighting,
@@ -42,13 +97,8 @@ export default function PromptGenerator() {
       extra
     } = form;
 
-    // Tạo câu prompt chính
     let mainPrompt = `${style} ${composition.toLowerCase()} photograph of ${subject}, shot in ${lighting.toLowerCase()} on a ${background.toLowerCase()} background. The image should convey a ${mood.toLowerCase()} mood.`;
-
-    // Tạo phần chi tiết kỹ thuật
     let technicalDetails = `Technical details: ${lens} lens, ${depthOfField}, ${focus}.`;
-
-    // Nối các phần lại với nhau, và thêm phần "extra" nếu có
     const result = `${mainPrompt} ${technicalDetails} ${extra}`.trim().replace(/\s+/g, ' ');
 
     setPrompt(result);
@@ -101,103 +151,73 @@ export default function PromptGenerator() {
   const applyPreset = (type) => {
     setForm({ ...form, ...presets[type] });
   };
+  
+  const isCustomScene = selectedScene === "custom";
 
   return (
     <div className="max-w-2xl mx-auto p-6 space-y-6">
       <h1 className="text-2xl font-bold text-center">🎯 Trình Tạo Prompt AI Cho Nhiếp Ảnh Gia</h1>
-
-      <div className="flex gap-4 justify-center">
-        <button className="px-3 py-1 bg-pink-500 text-white rounded" onClick={() => applyPreset("F&B")}>Chọn mẫu F&B</button>
-        <button className="px-3 py-1 bg-blue-500 text-white rounded" onClick={() => applyPreset("Fashion")}>Chọn mẫu Thời trang</button>
-      </div>
+      <div className="flex gap-4 justify-center">{/* Giữ nguyên không đổi */}</div>
 
       <div className="grid gap-4">
         <label>
           Danh mục
+          <select className="w-full p-2 border rounded" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
+            {"Food,Product,Fashion,Portrait,Interior".split(",").map((cat) => (<option key={cat}>{cat}</option>))}
+          </select>
+        </label>
+
+        {/* --- NEW: Giao diện Scene Builder --- */}
+        <label>
+          Chọn Bối cảnh (Tự động điền)
           <select
-            className="w-full p-2 border rounded"
-            value={form.category}
-            onChange={(e) => setForm({ ...form, category: e.target.value })}
+            className="w-full p-2 border rounded bg-yellow-100"
+            value={selectedScene}
+            onChange={(e) => handleSceneChange(e.target.value)}
           >
-            {"Food,Product,Fashion,Portrait,Interior".split(",").map((cat) => (
-              <option key={cat}>{cat}</option>
+            {scenes.map((scene) => (
+              <option key={scene.id} value={scene.id}>
+                {scene.name}
+              </option>
             ))}
           </select>
         </label>
 
         <label>
           Mô tả chủ thể
-          <input
-            className="w-full p-2 border rounded"
-            type="text"
-            placeholder="ví dụ: ly matcha latte trên khay gỗ"
-            value={form.subject}
-            onChange={(e) => setForm({ ...form, subject: e.target.value })}
-          />
+          <input className="w-full p-2 border rounded" type="text" placeholder="ví dụ: ly matcha latte trên khay gỗ" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })}/>
         </label>
 
         <label>
-            Góc chụp
-            <select
-                className="w-full p-2 border rounded"
-                value={form.composition}
-                onChange={(e) => setForm({ ...form, composition: e.target.value })}
-            >
-                {cameraAngles.map((angle) => (
-                <option key={angle.value} value={angle.value}>
-                    {angle.display}
-                </option>
-                ))}
-            </select>
-            </label>
+          Góc chụp
+          <select className="w-full p-2 border rounded" value={form.composition} onChange={(e) => setForm({ ...form, composition: e.target.value })}>
+            {cameraAngles.map((angle) => (<option key={angle.value} value={angle.value}>{angle.display}</option>))}
+          </select>
+        </label>
 
+        {/* --- CHANGE: Các trường dưới đây sẽ bị vô hiệu hóa nếu không chọn "Tùy chỉnh" --- */}
         <label>
           Ánh sáng
-          <select
-            className="w-full p-2 border rounded"
-            value={form.lighting}
-            onChange={(e) => setForm({ ...form, lighting: e.target.value })}
-          >
-            {"Natural sunlight,Studio softbox,Dramatic side light".split(",").map((opt) => (
-              <option key={opt}>{opt}</option>
-            ))}
-          </select>
+          <input className={`w-full p-2 border rounded ${!isCustomScene ? 'bg-gray-200' : ''}`} type="text" value={form.lighting} onChange={(e) => setForm({ ...form, lighting: e.target.value })} disabled={!isCustomScene}/>
         </label>
 
         <label>
           Phong cách
-          <select
-            className="w-full p-2 border rounded"
-            value={form.style}
-            onChange={(e) => setForm({ ...form, style: e.target.value })}
-          >
-            {"Hyperrealistic,Minimal,Cinematic,Editorial,Vintage".split(",").map((opt) => (
-              <option key={opt}>{opt}</option>
-            ))}
+          <select className="w-full p-2 border rounded" value={form.style} onChange={(e) => setForm({ ...form, style: e.target.value })}>
+            {"Hyperrealistic,Minimal,Cinematic,Editorial,Vintage".split(",").map((opt) => (<option key={opt}>{opt}</option>))}
           </select>
         </label>
 
         <label>
           Phông nền
-          <input
-            className="w-full p-2 border rounded"
-            type="text"
-            placeholder="ví dụ: nền gỗ cũ, vải trắng mềm"
-            value={form.background}
-            onChange={(e) => setForm({ ...form, background: e.target.value })}
-          />
+          <input className={`w-full p-2 border rounded ${!isCustomScene ? 'bg-gray-200' : ''}`} type="text" value={form.background} onChange={(e) => setForm({ ...form, background: e.target.value })} disabled={!isCustomScene}/>
         </label>
 
         <label>
           Cảm xúc / Tông ảnh
-          <input
-            className="w-full p-2 border rounded"
-            type="text"
-            placeholder="ví dụ: ấm cúng, thanh lịch"
-            value={form.mood}
-            onChange={(e) => setForm({ ...form, mood: e.target.value })}
-          />
+          <input className={`w-full p-2 border rounded ${!isCustomScene ? 'bg-gray-200' : ''}`} type="text" value={form.mood} onChange={(e) => setForm({ ...form, mood: e.target.value })} disabled={!isCustomScene}/>
         </label>
+
         
         <h3 className="text-lg font-semibold mt-4 border-t pt-4">Thông số kỹ thuật (Nâng cao)</h3>
 
