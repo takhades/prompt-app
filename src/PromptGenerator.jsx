@@ -9,6 +9,9 @@ export default function PromptGenerator() {
     style: "Hyperrealistic",
     background: "Plain white",
     mood: "Fresh",
+    depthOfField: "Shallow DoF (f/1.8)", // Nền mờ, xóa phông
+    lens: "50mm",
+    focus: "Sharp focus on subject",
     extra: ""
   });
   const [prompt, setPrompt] = useState("");
@@ -23,10 +26,20 @@ export default function PromptGenerator() {
       style,
       background,
       mood,
+      depthOfField,
+      lens,
+      focus,
       extra
     } = form;
 
-    const result = `${style} ${composition.toLowerCase()} photograph of ${subject}, shot in ${lighting.toLowerCase()} on a ${background.toLowerCase()} background. The image conveys a ${mood.toLowerCase()} mood. ${extra}`.trim();
+    // Tạo câu prompt chính
+    let mainPrompt = `${style} ${composition.toLowerCase()} photograph of ${subject}, shot in ${lighting.toLowerCase()} on a ${background.toLowerCase()} background. The image should convey a ${mood.toLowerCase()} mood.`;
+
+    // Tạo phần chi tiết kỹ thuật
+    let technicalDetails = `Technical details: ${lens} lens, ${depthOfField}, ${focus}.`;
+
+    // Nối các phần lại với nhau, và thêm phần "extra" nếu có
+    const result = `${mainPrompt} ${technicalDetails} ${extra}`.trim().replace(/\s+/g, ' ');
 
     setPrompt(result);
     setCopied(false);
@@ -172,6 +185,47 @@ export default function PromptGenerator() {
             value={form.mood}
             onChange={(e) => setForm({ ...form, mood: e.target.value })}
           />
+        </label>
+        
+        <h3 className="text-lg font-semibold mt-4 border-t pt-4">Thông số kỹ thuật (Nâng cao)</h3>
+
+        <label>
+        Độ sâu trường ảnh (DoF)
+        <select
+            className="w-full p-2 border rounded"
+            value={form.depthOfField}
+            onChange={(e) => setForm({ ...form, depthOfField: e.target.value })}
+        >
+            <option>Shallow DoF (f/1.8)</option>
+            <option>Medium DoF (f/5.6)</option>
+            <option>Deep DoF (f/16)</option>
+        </select>
+        </label>
+
+        <label>
+        Ống kính (Lens)
+        <select
+            className="w-full p-2 border rounded"
+            value={form.lens}
+            onChange={(e) => setForm({ ...form, lens: e.target.value })}
+        >
+            <option>50mm</option>
+            <option>85mm</option>
+            <option>35mm</option>
+            <option>100mm Macro</option>
+        </select>
+        </label>
+
+        <label>
+        Độ nét (Focus)
+        <select
+            className="w-full p-2 border rounded"
+            value={form.focus}
+            onChange={(e) => setForm({ ...form, focus: e.target.value })}
+        >
+            <option>Sharp focus on subject</option>
+            <option>Soft, dreamy focus</option>
+        </select>
         </label>
 
         <label>
