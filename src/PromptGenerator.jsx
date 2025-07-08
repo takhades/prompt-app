@@ -1,10 +1,20 @@
 import { useState } from "react";
 
 export default function PromptGenerator() {
+  const cameraAngles = [
+    { value: "Three-Quarters (45°) view", display: "Góc 3/4 (45°)" },
+    { value: "Eye-Level (10°) shot", display: "Ngang tầm mắt (10°)" },
+    { value: "Top-Down (90°) shot", display: "Chụp từ trên xuống (90°)" },
+    { value: "High Angle (75°) shot", display: "Góc cao (75°)" },
+    { value: "Low Angle shot", display: "Góc thấp" },
+    { value: "Macro (Extreme Close-Up) shot", display: "Siêu cận cảnh (Macro)" },
+    { value: "Dutch Angle shot", display: "Góc nghiêng (Dutch Angle)" },
+    ];
+
   const [form, setForm] = useState({
     category: "Food",
     subject: "",
-    composition: "Top-down (Flat lay)",
+    composition: "Three-Quarters (45°) view",
     lighting: "Natural sunlight",
     style: "Hyperrealistic",
     background: "Plain white",
@@ -127,17 +137,19 @@ export default function PromptGenerator() {
         </label>
 
         <label>
-          Góc chụp
-          <select
-            className="w-full p-2 border rounded"
-            value={form.composition}
-            onChange={(e) => setForm({ ...form, composition: e.target.value })}
-          >
-            {"Top-down (Flat lay),Eye-level,Low angle".split(",").map((opt) => (
-              <option key={opt}>{opt}</option>
-            ))}
-          </select>
-        </label>
+            Góc chụp
+            <select
+                className="w-full p-2 border rounded"
+                value={form.composition}
+                onChange={(e) => setForm({ ...form, composition: e.target.value })}
+            >
+                {cameraAngles.map((angle) => (
+                <option key={angle.value} value={angle.value}>
+                    {angle.display}
+                </option>
+                ))}
+            </select>
+            </label>
 
         <label>
           Ánh sáng
