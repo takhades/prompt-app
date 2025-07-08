@@ -175,14 +175,88 @@ export default function PromptGenerator() {
           Cảm xúc / Tông ảnh
           <input className={`w-full p-2 border rounded ${!isCustomScene ? 'bg-gray-200' : ''}`} type="text" value={form.mood} onChange={(e) => setForm({ ...form, mood: e.target.value })} disabled={!isCustomScene}/>
         </label>
-
-        {/* ... các trường kỹ thuật và nút button giữ nguyên ... */}
+        
         <h3 className="text-lg font-semibold mt-4 border-t pt-4">Thông số kỹ thuật (Nâng cao)</h3>
-        {/* ... */}
+
+        <label>
+        Độ sâu trường ảnh (DoF)
+        <select
+            className="w-full p-2 border rounded"
+            value={form.depthOfField}
+            onChange={(e) => setForm({ ...form, depthOfField: e.target.value })}
+        >
+            <option>Shallow DoF (f/1.8)</option>
+            <option>Medium DoF (f/5.6)</option>
+            <option>Deep DoF (f/16)</option>
+        </select>
+        </label>
+
+        <label>
+        Ống kính (Lens)
+        <select
+            className="w-full p-2 border rounded"
+            value={form.lens}
+            onChange={(e) => setForm({ ...form, lens: e.target.value })}
+        >
+            <option>50mm</option>
+            <option>85mm</option>
+            <option>35mm</option>
+            <option>100mm Macro</option>
+        </select>
+        </label>
+
+        <label>
+        Độ nét (Focus)
+        <select
+            className="w-full p-2 border rounded"
+            value={form.focus}
+            onChange={(e) => setForm({ ...form, focus: e.target.value })}
+        >
+            <option>Sharp focus on subject</option>
+            <option>Soft, dreamy focus</option>
+        </select>
+        </label>
+
+        <label>
+          Chi tiết bổ sung (tuỳ chọn)
+          <textarea
+            className="w-full p-2 border rounded"
+            rows={3}
+            placeholder="ví dụ: hơi nước bốc lên, giọt nước đọng trên ly"
+            value={form.extra}
+            onChange={(e) => setForm({ ...form, extra: e.target.value })}
+          />
+        </label>
+
+        <button
+          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+          onClick={generatePrompt}
+        >
+          Tạo Prompt
+        </button>
       </div>
 
       {prompt && (
-        <div className="mt-6 border-t pt-4 space-y-2">{/* Giữ nguyên không đổi */}</div>
+        <div className="mt-6 border-t pt-4 space-y-2">
+          <h2 className="font-semibold">Prompt đã tạo:</h2>
+          <p className="bg-gray-100 p-4 rounded whitespace-pre-wrap">{prompt}</p>
+
+          <div className="flex gap-4">
+            <button
+              className="bg-green-500 text-white px-3 py-1 rounded"
+              onClick={copyToClipboard}
+            >
+              {copied ? "Đã sao chép!" : "Sao chép Prompt"}
+            </button>
+
+            <button
+              className="bg-gray-700 text-white px-3 py-1 rounded"
+              onClick={exportComfyUIFormat}
+            >
+              Xuất cho ComfyUI
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
